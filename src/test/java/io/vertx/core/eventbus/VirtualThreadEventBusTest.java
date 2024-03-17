@@ -10,18 +10,16 @@
  */
 package io.vertx.core.eventbus;
 
-import io.vertx.core.Future;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.test.core.VertxTestBase;
 import org.junit.Assume;
-import org.junit.Before;
 import org.junit.Test;
 
 public class VirtualThreadEventBusTest extends VertxTestBase {
 
   VertxInternal vertx;
 
-  @Before
+  @Override
   public void setUp() throws Exception {
     super.setUp();
     vertx = (VertxInternal) super.vertx;
@@ -31,9 +29,7 @@ public class VirtualThreadEventBusTest extends VertxTestBase {
   public void testEventBus() {
     Assume.assumeTrue(VertxInternal.isVirtualThreadAvailable());
     EventBus eb = vertx.eventBus();
-    eb.consumer("test-addr", msg -> {
-      msg.reply(msg.body());
-    });
+    eb.consumer("test-addr", msg -> msg.reply(msg.body()));
     vertx.createVirtualThreadContext().runOnContext(v -> {
       Message<String> ret = eb.<String>request("test-addr", "test").await();
       assertEquals("test", ret.body());

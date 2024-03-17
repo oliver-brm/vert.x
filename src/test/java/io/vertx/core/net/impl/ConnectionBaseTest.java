@@ -25,7 +25,7 @@ import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetSocket;
 import io.vertx.test.core.TestUtils;
 import io.vertx.test.core.VertxTestBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,8 +41,8 @@ public class ConnectionBaseTest extends VertxTestBase {
   private volatile Handler<NetSocketInternal> connectHandler;
 
   @Override
-  public void before() throws Exception {
-    super.before();
+  public void setUp() throws Exception {
+    super.setUp();
     client = vertx.createNetClient();
     server = vertx.createNetServer().connectHandler(so -> {
       Handler<NetSocketInternal> handler = connectHandler;

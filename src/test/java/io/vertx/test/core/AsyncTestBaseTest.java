@@ -11,9 +11,10 @@
 
 package io.vertx.test.core;
 
-import org.junit.Assert;
 import org.junit.ComparisonFailure;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runners.BlockJUnit4ClassRunner;
@@ -32,12 +33,14 @@ public class AsyncTestBaseTest extends AsyncTestBase {
 
   private ExecutorService executor;
 
+  @Override
   public void setUp() throws Exception {
     super.setUp();
     disableThreadChecks();
     executor = Executors.newFixedThreadPool(10);
   }
 
+  @Override
   protected void tearDown() throws Exception {
     executor.shutdown();
     executor.awaitTermination(10, TimeUnit.SECONDS);
@@ -271,7 +274,8 @@ public class AsyncTestBaseTest extends AsyncTestBase {
     assertEquals(toWaitFor, cnt.get());
   }
 
-  public static class LateFailureReport extends AsyncTestBase {
+  @Nested
+  class LateFailureReport extends AsyncTestBase {
 
     CountDownLatch latch = new CountDownLatch(1);
 
@@ -315,6 +319,6 @@ public class AsyncTestBaseTest extends AsyncTestBase {
     } catch (AssertionError e) {
       msg = e.getMessage();
     }
-    Assert.assertEquals("it failed", msg);
+    Assertions.assertEquals("it failed", msg);
   }
 }

@@ -17,14 +17,14 @@ import io.vertx.core.http.*;
 import io.vertx.core.http.impl.CleanableHttpClient;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.net.*;
+import io.vertx.core.net.NetClient;
+import io.vertx.core.net.NetServer;
+import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.impl.CleanableNetClient;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.test.core.AsyncTestBase;
-import io.vertx.test.core.Repeat;
-import io.vertx.test.core.RepeatRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
@@ -47,9 +47,6 @@ public class VertxTest extends AsyncTestBase {
   public static void runGC() {
     RUNNER.runSystemGC();
   }
-
-  @Rule
-  public RepeatRule repeatRule = new RepeatRule();
 
   @Test
   public void testCloseHooksCalled() {
@@ -463,8 +460,7 @@ public class VertxTest extends AsyncTestBase {
     await();
   }
 
-  @Repeat(times = 100)
-  @Test
+  @RepeatedTest(100)
   public void testWorkerExecutorConcurrentCloseWithVertx() throws InterruptedException {
     Vertx vertx = Vertx.vertx();
     try {

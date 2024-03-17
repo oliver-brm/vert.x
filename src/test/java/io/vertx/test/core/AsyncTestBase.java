@@ -20,13 +20,10 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.internal.ArrayComparisonFailure;
-import org.junit.rules.TestName;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.*;
@@ -52,12 +49,8 @@ public class AsyncTestBase {
   private volatile Thread mainThread;
   private volatile boolean lateFailure;
   private Map<String, Exception> threadNames = new ConcurrentHashMap<>();
-  @Rule
-  public TestName name = new TestName();
-
 
   protected void setUp() throws Exception {
-    log.info("Starting test: " + this.getClass().getSimpleName() + "#" + name.getMethodName());
     mainThread = Thread.currentThread();
     tearingDown = false;
     waitFor(1);
@@ -73,12 +66,13 @@ public class AsyncTestBase {
     afterAsyncTestBase();
   }
 
-  @Before
-  public void before() throws Exception {
+  @BeforeEach
+  public void before(TestInfo testInfo) throws Exception {
+    log.info("Starting test: " + this.getClass().getSimpleName() + "#" + testInfo.getDisplayName());
     setUp();
   }
 
-  @After
+  @AfterEach
   public void after() throws Exception {
     tearDown();
   }
@@ -202,7 +196,7 @@ public class AsyncTestBase {
   protected void assertTrue(String message, boolean condition) {
     checkThread();
     try {
-      Assert.assertTrue(message, condition);
+      Assertions.assertTrue(condition, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -211,16 +205,16 @@ public class AsyncTestBase {
   protected void assertFalse(boolean condition) {
     checkThread();
     try {
-      Assert.assertFalse(condition);
+      Assertions.assertFalse(condition);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
   }
 
-  protected void assertArrayEquals(String message, char[] expecteds, char[] actuals) throws ArrayComparisonFailure {
+  protected void assertArrayEquals(String message, char[] expecteds, char[] actuals) {
     checkThread();
     try {
-      Assert.assertArrayEquals(message, expecteds, actuals);
+      Assertions.assertArrayEquals(expecteds, actuals, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -229,7 +223,7 @@ public class AsyncTestBase {
   protected void assertSame(String message, Object expected, Object actual) {
     checkThread();
     try {
-      Assert.assertSame(message, expected, actual);
+      Assertions.assertSame(expected, actual, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -238,7 +232,7 @@ public class AsyncTestBase {
   protected void assertEquals(long expected, long actual) {
     checkThread();
     try {
-      Assert.assertEquals(expected, actual);
+      Assertions.assertEquals(expected, actual);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -247,7 +241,7 @@ public class AsyncTestBase {
   protected void assertNull(Object object) {
     checkThread();
     try {
-      Assert.assertNull(object);
+      Assertions.assertNull(object);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -256,7 +250,7 @@ public class AsyncTestBase {
   protected void assertFalse(String message, boolean condition) {
     checkThread();
     try {
-      Assert.assertFalse(message, condition);
+      Assertions.assertFalse(condition, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -265,7 +259,7 @@ public class AsyncTestBase {
   protected void fail(String message) {
     checkThread();
     try {
-      Assert.fail(message);
+      Assertions.fail(message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -274,16 +268,16 @@ public class AsyncTestBase {
   protected void assertNull(String message, Object object) {
     checkThread();
     try {
-      Assert.assertNull(message, object);
+      Assertions.assertNull(object, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
   }
 
-  protected void assertArrayEquals(String message, float[] expecteds, float[] actuals, float delta) throws ArrayComparisonFailure {
+  protected void assertArrayEquals(String message, float[] expecteds, float[] actuals, float delta) {
     checkThread();
     try {
-      Assert.assertArrayEquals(message, expecteds, actuals, delta);
+      Assertions.assertArrayEquals(expecteds, actuals, delta, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -293,35 +287,34 @@ public class AsyncTestBase {
   protected void assertEquals(String message, double expected, double actual) {
     checkThread();
     try {
-      Assert.assertEquals(message, expected, actual);
+      Assertions.assertEquals(expected, actual, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
   }
 
-
-  protected void assertArrayEquals(String message, double[] expecteds, double[] actuals, double delta) throws ArrayComparisonFailure {
+  protected void assertArrayEquals(String message, double[] expecteds, double[] actuals, double delta) {
     checkThread();
     try {
-      Assert.assertArrayEquals(message, expecteds, actuals, delta);
+      Assertions.assertArrayEquals(expecteds, actuals, delta, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
   }
 
-  protected void assertArrayEquals(String message, Object[] expecteds, Object[] actuals) throws ArrayComparisonFailure {
+  protected void assertArrayEquals(String message, Object[] expecteds, Object[] actuals) {
     checkThread();
     try {
-      Assert.assertArrayEquals(message, expecteds, actuals);
+      Assertions.assertArrayEquals(expecteds, actuals, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
   }
 
-  protected void assertArrayEquals(String message, short[] expecteds, short[] actuals) throws ArrayComparisonFailure {
+  protected void assertArrayEquals(String message, short[] expecteds, short[] actuals) {
     checkThread();
     try {
-      Assert.assertArrayEquals(message, expecteds, actuals);
+      Assertions.assertArrayEquals(expecteds, actuals, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -330,7 +323,7 @@ public class AsyncTestBase {
   protected void assertArrayEquals(short[] expecteds, short[] actuals) {
     checkThread();
     try {
-      Assert.assertArrayEquals(expecteds, actuals);
+      Assertions.assertArrayEquals(expecteds, actuals);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -339,7 +332,7 @@ public class AsyncTestBase {
   protected void assertArrayEquals(long[] expecteds, long[] actuals) {
     checkThread();
     try {
-      Assert.assertArrayEquals(expecteds, actuals);
+      Assertions.assertArrayEquals(expecteds, actuals);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -348,7 +341,7 @@ public class AsyncTestBase {
   protected void assertNotNull(Object object) {
     checkThread();
     try {
-      Assert.assertNotNull(object);
+      Assertions.assertNotNull(object);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -357,7 +350,7 @@ public class AsyncTestBase {
   protected void assertEquals(Object expected, Object actual) {
     checkThread();
     try {
-      Assert.assertEquals(expected, actual);
+      Assertions.assertEquals(expected, actual);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -366,7 +359,7 @@ public class AsyncTestBase {
   protected void assertEquals(String message, Object expected, Object actual) {
     checkThread();
     try {
-      Assert.assertEquals(message, expected, actual);
+      Assertions.assertEquals(expected, actual, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -375,7 +368,7 @@ public class AsyncTestBase {
   protected void assertTrue(boolean condition) {
     checkThread();
     try {
-      Assert.assertTrue(condition);
+      Assertions.assertTrue(condition);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -384,7 +377,7 @@ public class AsyncTestBase {
   protected void assertArrayEquals(Object[] expecteds, Object[] actuals) {
     checkThread();
     try {
-      Assert.assertArrayEquals(expecteds, actuals);
+      Assertions.assertArrayEquals(expecteds, actuals);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -393,7 +386,7 @@ public class AsyncTestBase {
   protected void assertNotNull(String message, Object object) {
     checkThread();
     try {
-      Assert.assertNotNull(message, object);
+      Assertions.assertNotNull(object, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -402,7 +395,7 @@ public class AsyncTestBase {
   protected void assertEquals(String message, double expected, double actual, double delta) {
     checkThread();
     try {
-      Assert.assertEquals(message, expected, actual, delta);
+      Assertions.assertEquals(expected, actual, delta, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -411,7 +404,7 @@ public class AsyncTestBase {
   protected void fail() {
     checkThread();
     try {
-      Assert.fail();
+      Assertions.fail();
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -425,7 +418,7 @@ public class AsyncTestBase {
   protected void assertSame(Object expected, Object actual) {
     checkThread();
     try {
-      Assert.assertSame(expected, actual);
+      Assertions.assertSame(expected, actual);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -434,25 +427,25 @@ public class AsyncTestBase {
   protected void assertEquals(String message, long expected, long actual) {
     checkThread();
     try {
-      Assert.assertEquals(message, expected, actual);
+      Assertions.assertEquals(expected, actual, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
   }
 
-  protected void assertArrayEquals(String message, byte[] expecteds, byte[] actuals) throws ArrayComparisonFailure {
+  protected void assertArrayEquals(String message, byte[] expecteds, byte[] actuals) {
     checkThread();
     try {
-      Assert.assertArrayEquals(message, expecteds, actuals);
+      Assertions.assertArrayEquals(expecteds, actuals, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
   }
 
-  protected void assertArrayEquals(String message, long[] expecteds, long[] actuals) throws ArrayComparisonFailure {
+  protected void assertArrayEquals(String message, long[] expecteds, long[] actuals) {
     checkThread();
     try {
-      Assert.assertArrayEquals(message, expecteds, actuals);
+      Assertions.assertArrayEquals(expecteds, actuals, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -461,7 +454,7 @@ public class AsyncTestBase {
   protected void assertEquals(double expected, double actual, double delta) {
     checkThread();
     try {
-      Assert.assertEquals(expected, actual, delta);
+      Assertions.assertEquals(expected, actual, delta);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -470,7 +463,7 @@ public class AsyncTestBase {
   protected <T> void assertThat(T actual, Matcher<T> matcher) {
     checkThread();
     try {
-      Assert.assertThat(actual, matcher);
+      org.hamcrest.MatcherAssert.assertThat(actual, matcher);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -480,7 +473,7 @@ public class AsyncTestBase {
   protected void assertEquals(String message, Object[] expecteds, Object[] actuals) {
     checkThread();
     try {
-      Assert.assertEquals(message, expecteds, actuals);
+      Assertions.assertEquals(expecteds, actuals, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -490,7 +483,7 @@ public class AsyncTestBase {
   protected void assertEquals(Object[] expecteds, Object[] actuals) {
     checkThread();
     try {
-      Assert.assertEquals(expecteds, actuals);
+      Assertions.assertEquals(expecteds, actuals);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -499,7 +492,7 @@ public class AsyncTestBase {
   protected void assertNotSame(String message, Object unexpected, Object actual) {
     checkThread();
     try {
-      Assert.assertNotSame(message, unexpected, actual);
+      Assertions.assertNotSame(unexpected, actual, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -508,7 +501,7 @@ public class AsyncTestBase {
   protected <T> void assertThat(String reason, T actual, Matcher<T> matcher) {
     checkThread();
     try {
-      Assert.assertThat(reason, actual, matcher);
+      org.hamcrest.MatcherAssert.assertThat(reason, actual, matcher);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -517,7 +510,7 @@ public class AsyncTestBase {
   protected void assertArrayEquals(float[] expecteds, float[] actuals, float delta) {
     checkThread();
     try {
-      Assert.assertArrayEquals(expecteds, actuals, delta);
+      Assertions.assertArrayEquals(expecteds, actuals, delta);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -526,7 +519,7 @@ public class AsyncTestBase {
   protected void assertNotSame(Object unexpected, Object actual) {
     checkThread();
     try {
-      Assert.assertNotSame(unexpected, actual);
+      Assertions.assertNotSame(unexpected, actual);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -535,7 +528,7 @@ public class AsyncTestBase {
   protected void assertArrayEquals(byte[] expecteds, byte[] actuals) {
     checkThread();
     try {
-      Assert.assertArrayEquals(expecteds, actuals);
+      Assertions.assertArrayEquals(expecteds, actuals);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -544,7 +537,7 @@ public class AsyncTestBase {
   protected void assertArrayEquals(char[] expecteds, char[] actuals) {
     checkThread();
     try {
-      Assert.assertArrayEquals(expecteds, actuals);
+      Assertions.assertArrayEquals(expecteds, actuals);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -553,7 +546,7 @@ public class AsyncTestBase {
   protected void assertArrayEquals(double[] expecteds, double[] actuals, double delta) {
     checkThread();
     try {
-      Assert.assertArrayEquals(expecteds, actuals, delta);
+      Assertions.assertArrayEquals(expecteds, actuals, delta);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -562,7 +555,7 @@ public class AsyncTestBase {
   protected void assertArrayEquals(int[] expecteds, int[] actuals) {
     checkThread();
     try {
-      Assert.assertArrayEquals(expecteds, actuals);
+      Assertions.assertArrayEquals(expecteds, actuals);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
@@ -572,16 +565,16 @@ public class AsyncTestBase {
   protected void assertEquals(double expected, double actual) {
     checkThread();
     try {
-      Assert.assertEquals(expected, actual);
+      Assertions.assertEquals(expected, actual);
     } catch (AssertionError e) {
       handleThrowable(e);
     }
   }
 
-  protected void assertArrayEquals(String message, int[] expecteds, int[] actuals) throws ArrayComparisonFailure {
+  protected void assertArrayEquals(String message, int[] expecteds, int[] actuals) {
     checkThread();
     try {
-      Assert.assertArrayEquals(message, expecteds, actuals);
+      Assertions.assertArrayEquals(expecteds, actuals, message);
     } catch (AssertionError e) {
       handleThrowable(e);
     }

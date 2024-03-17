@@ -10,7 +10,10 @@
   ~
   ~ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
   ~
-  --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -44,7 +47,7 @@
   </scm>
 
   <properties>
-    <junit.version>4.13.1</junit.version>
+    <junit.jupiter.version>5.10.2</junit.jupiter.version>
     <assertj.version>3.4.1</assertj.version>
     <apacheds-protocol-dns.version>1.5.7</apacheds-protocol-dns.version>
     <generated.dir>${project.basedir}/src/main/generated</generated.dir>
@@ -160,9 +163,15 @@
 
     <!-- Testing -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -240,7 +249,8 @@
               <vertx.threadChecks>true</vertx.threadChecks>
             </systemPropertyVariables>
             <!-- Needs to be small enough to run in a EC2 1.7GB small instance -->
-            <!-- IMPORTANT: when modifying this line, don't forge to modify the same line in the`coverage` profile -->
+            <!-- IMPORTANT: when modifying this line, don't forge to modify the same line in
+            the`coverage` profile -->
             <argLine>-Xmx1200M</argLine>
             <forkCount>1</forkCount>
             <reuseForks>true</reuseForks>
@@ -480,7 +490,8 @@
                 <include>io/vertx/it/ConnectToTLSTrustedServerTest.java</include>
               </includes>
               <systemProperties>
-                <javax.net.ssl.trustStore>${project.basedir}/src/test/resources/tls/client-truststore-root-ca.jks</javax.net.ssl.trustStore>
+                <javax.net.ssl.trustStore>
+                  ${project.basedir}/src/test/resources/tls/client-truststore-root-ca.jks</javax.net.ssl.trustStore>
                 <javax.net.ssl.trustStorePassword>wibble</javax.net.ssl.trustStorePassword>
               </systemProperties>
             </configuration>
@@ -667,7 +678,8 @@
                 <vertx-test-alpn-openssl>false</vertx-test-alpn-openssl>
               </systemProperties>
               <additionalClasspathElements>
-                <additionalClasspathElement>${project.basedir}/src/test/classpath/customthreadfactory</additionalClasspathElement>
+                <additionalClasspathElement>
+                  ${project.basedir}/src/test/classpath/customthreadfactory</additionalClasspathElement>
               </additionalClasspathElements>
             </configuration>
           </execution>
@@ -686,7 +698,8 @@
                 <vertx-test-alpn-openssl>false</vertx-test-alpn-openssl>
               </systemProperties>
               <additionalClasspathElements>
-                <additionalClasspathElement>${project.basedir}/src/test/classpath/customexecutorservicefactory</additionalClasspathElement>
+                <additionalClasspathElement>
+                  ${project.basedir}/src/test/classpath/customexecutorservicefactory</additionalClasspathElement>
               </additionalClasspathElements>
             </configuration>
           </execution>

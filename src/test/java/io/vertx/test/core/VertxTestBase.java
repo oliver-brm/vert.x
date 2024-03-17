@@ -15,16 +15,16 @@ import io.vertx.core.*;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.metrics.MetricsOptions;
-import io.vertx.core.net.*;
+import io.vertx.core.net.KeyCertOptions;
+import io.vertx.core.net.TCPSSLOptions;
 import io.vertx.core.spi.VertxMetricsFactory;
 import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.tracing.TracingOptions;
 import io.vertx.test.fakecluster.FakeClusterManager;
 import junit.framework.AssertionFailedError;
-import org.junit.Assert;
 import org.junit.Rule;
+import org.junit.jupiter.api.Assertions;
 
 import javax.net.ssl.SSLContext;
 import java.security.NoSuchAlgorithmException;
@@ -63,6 +63,7 @@ public class VertxTestBase extends AsyncTestBase {
     created = null;
   }
 
+  @Override
   public void setUp() throws Exception {
     super.setUp();
     vinit();
@@ -114,7 +115,7 @@ public class VertxTestBase extends AsyncTestBase {
         latch.countDown();
       });
     }
-    Assert.assertTrue(latch.await(180, TimeUnit.SECONDS));
+    Assertions.assertTrue(latch.await(180, TimeUnit.SECONDS));
   }
 
   /**
@@ -249,7 +250,7 @@ public class VertxTestBase extends AsyncTestBase {
     CompletableFuture<Context> fut = new CompletableFuture<>();
     vertx.deployVerticle(new AbstractVerticle() {
       @Override
-      public void start() throws Exception {
+      public void start() {
         fut.complete(context);
       }
     }, new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER)).onComplete(ar -> {
