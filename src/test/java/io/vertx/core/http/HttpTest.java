@@ -60,8 +60,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.*;
 import java.util.stream.IntStream;
 
-import static io.vertx.core.http.HttpMethod.PUT;
+import static io.vertx.core.http.HttpMethod.*;
 import static io.vertx.test.core.TestUtils.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -2688,6 +2689,75 @@ public abstract class HttpTest extends HttpTestBase {
   }
 
   @Test
+  public void testGetAbsoluteURIWithParam() throws Exception {
+    server.requestHandler(req -> {
+      assertEquals(req.scheme() + "://localhost:" + DEFAULT_HTTP_PORT + "/foo/bar?a=1", req.absoluteURI());
+      req.response().end();
+    });
+
+    startServer(testAddress);
+    client.request(new RequestOptions(requestOptions).setURI("/foo/bar?a=1"))
+      .compose(req -> req.send().compose(HttpClientResponse::end))
+      .onComplete(onSuccess(v -> {
+        testComplete();
+      }));
+
+    await();
+  }
+
+  @Test
+  public void testGetAbsoluteURIWithUnsafeParam() throws Exception {
+    server.requestHandler(req -> {
+      assertEquals(req.scheme() + "://localhost:" + DEFAULT_HTTP_PORT + "/foo/bar?a={1}", req.absoluteURI());
+      req.response().end();
+    });
+
+    startServer(testAddress);
+    client.request(new RequestOptions(requestOptions).setURI("/foo/bar?a={1}"))
+      .compose(req -> req.send().compose(HttpClientResponse::end))
+      .onComplete(onSuccess(v -> {
+        testComplete();
+      }));
+
+    await();
+  }
+
+  @Test
+  public void testGetAbsoluteURIWithOptionsServerLevel() throws Exception {
+    server.requestHandler(req -> {
+      assertEquals(OPTIONS, req.method());
+      assertNull(req.absoluteURI());
+      req.response().end();
+    });
+
+    startServer(testAddress);
+    client.request(new RequestOptions(requestOptions).setURI("*").setMethod(OPTIONS))
+      .compose(req -> req.send().compose(HttpClientResponse::end))
+      .onComplete(onSuccess(v -> {
+        testComplete();
+      }));
+
+    await();
+  }
+
+  @Test
+  public void testGetAbsoluteURIWithAbsoluteRequestUri() throws Exception {
+    server.requestHandler(req -> {
+      assertEquals("http://www.w3.org/pub/WWW/TheProject.html", req.absoluteURI());
+      req.response().end();
+    });
+
+    startServer(testAddress);
+    client.request(new RequestOptions(requestOptions).setURI("http://www.w3.org/pub/WWW/TheProject.html"))
+      .compose(req -> req.send().compose(HttpClientResponse::end))
+      .onComplete(onSuccess(v -> {
+        testComplete();
+      }));
+
+    await();
+  }
+
+  @Test
   public void testListenInvalidPort() throws Exception {
     server.close();
     ServerSocket occupied = null;
@@ -3724,6 +3794,55 @@ public abstract class HttpTest extends HttpTestBase {
   @Test
   public void testFollowRedirectPutOn308() throws Exception {
     testFollowRedirect(HttpMethod.PUT, HttpMethod.PUT, 308, 308, 1, "http://" + DEFAULT_HTTP_HOST_AND_PORT + "/redirected", "http://" + DEFAULT_HTTP_HOST_AND_PORT + "/somepath");
+  }
+
+
+  @Test
+  public void testFollowRedirectsWithProxy() throws Exception {
+    Assume.assumeThat("Proxy is only supported with HTTP/1", this, instanceOf(Http1xTest.class));
+    waitFor(2);
+    String location = "http://" + DEFAULT_HTTP_HOST + ":" + DEFAULT_HTTP_PORT + "/ok";
+    server.requestHandler(req -> {
+      if (!req.headers().contains("foo", "bar", true)) {
+        fail("Missing expected header");
+        return;
+      }
+      assertEquals(Collections.singletonList("bar"), req.headers().getAll("foo"));
+      if (req.path().equals("/redirect")) {
+        req.response().setStatusCode(301).putHeader("Location", location).end();
+      } else {
+        req.response().end(req.path());
+        complete();
+      }
+    });
+
+    startServer();
+    startProxy(null, ProxyType.HTTP);
+    client.request(
+        new RequestOptions(requestOptions)
+          .setServer(null)
+          .setMethod(GET)
+          .setURI("/redirect")
+          .setProxyOptions(new ProxyOptions().setPort(proxy.port()))
+      )
+      .compose(req -> req
+        .putHeader("foo", "bar")
+        .setFollowRedirects(true)
+        .send()
+        .compose(resp -> {
+          assertEquals(200, resp.statusCode());
+          assertEquals(location, proxy.getLastUri());
+          return resp.body().compose(body -> {
+            if (resp.statusCode() == 200) {
+              assertEquals(Buffer.buffer("/ok"), body);
+            } else {
+              assertEquals(Buffer.buffer(), body);
+            }
+            return Future.succeededFuture();
+          });
+        })
+      ).onSuccess(v -> testComplete());
+    await();
   }
 
   private void testFollowRedirect(

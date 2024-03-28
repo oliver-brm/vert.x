@@ -12,11 +12,7 @@
 package io.vertx.core.http.impl;
 
 import io.netty.handler.codec.DecoderResult;
-import io.netty.handler.codec.http.DefaultHttpContent;
-import io.netty.handler.codec.http.DefaultHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.LastHttpContent;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.Attribute;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData;
@@ -29,15 +25,9 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.buffer.impl.BufferInternal;
 import io.vertx.core.http.Cookie;
-import io.vertx.core.http.HttpConnection;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServerFileUpload;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpVersion;
-import io.vertx.core.http.ServerWebSocket;
-import io.vertx.core.http.StreamPriority;
-import io.vertx.core.http.StreamResetException;
-import io.vertx.core.http.HttpFrame;
+import io.vertx.core.http.*;
 import io.vertx.core.http.impl.headers.Http2HeadersAdaptor;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
@@ -48,7 +38,6 @@ import io.vertx.core.net.SocketAddress;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.security.cert.X509Certificate;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -75,6 +64,7 @@ public class Http2ServerRequest extends HttpServerRequestInternal implements Htt
   private HttpEventHandler eventHandler;
   private boolean ended;
   private Handler<HttpServerFileUpload> uploadHandler;
+  private boolean expectMultipart;
   private HttpPostRequestDecoder postRequestDecoder;
   private Handler<HttpFrame> customFrameHandler;
   private Handler<StreamPriority> streamPriorityHandler;
@@ -146,7 +136,11 @@ public class Http2ServerRequest extends HttpServerRequestInternal implements Htt
     if (postRequestDecoder != null) {
       try {
         postRequestDecoder.offer(new DefaultHttpContent(((BufferInternal)data).getByteBuf()));
-      } catch (Exception e) {
+      } catch (HttpPostRequestDecoder.ErrorDataDecoderException |
+               HttpPostRequestDecoder.TooLongFormFieldException |
+               HttpPostRequestDecoder.TooManyFormFieldsException e) {
+        postRequestDecoder.destroy();
+        postRequestDecoder = null;
         handleException(e);
       }
     }
@@ -183,6 +177,7 @@ public class Http2ServerRequest extends HttpServerRequestInternal implements Htt
           handleException(e);
         } finally {
           postRequestDecoder.destroy();
+          postRequestDecoder = null;
         }
       }
       handler = eventHandler;
@@ -388,11 +383,7 @@ public class Http2ServerRequest extends HttpServerRequestInternal implements Htt
     }
     synchronized (stream.conn) {
       if (absoluteURI == null) {
-        try {
-          absoluteURI = HttpUtils.absoluteURI(serverOrigin, this);
-        } catch (URISyntaxException e) {
-          log.error("Failed to create abs uri", e);
-        }
+        absoluteURI = HttpUtils.absoluteURI(serverOrigin, this);
       }
       return absoluteURI;
     }
@@ -407,6 +398,7 @@ public class Http2ServerRequest extends HttpServerRequestInternal implements Htt
   public HttpServerRequest setExpectMultipart(boolean expect) {
     synchronized (stream.conn) {
       checkEnded();
+      expectMultipart = expect;
       if (expect) {
         if (postRequestDecoder == null) {
           String contentType = headersMap.get(HttpHeaderNames.CONTENT_TYPE);
@@ -425,8 +417,11 @@ public class Http2ServerRequest extends HttpServerRequestInternal implements Htt
             stream.uri);
           req.headers().add(HttpHeaderNames.CONTENT_TYPE, contentType);
           NettyFileUploadDataFactory factory = new NettyFileUploadDataFactory(context, this, () -> uploadHandler);
-          factory.setMaxLimit(stream.conn.options.getMaxFormAttributeSize());
-          postRequestDecoder = new HttpPostRequestDecoder(factory, req);
+          HttpServerOptions options = stream.conn.options;
+          factory.setMaxLimit(options.getMaxFormAttributeSize());
+          int maxFields = options.getMaxFormFields();
+          int maxBufferedBytes = options.getMaxFormBufferedBytes();
+          postRequestDecoder = new HttpPostRequestDecoder(factory, req, HttpConstants.DEFAULT_CHARSET, maxFields, maxBufferedBytes);
         }
       } else {
         postRequestDecoder = null;
@@ -438,7 +433,7 @@ public class Http2ServerRequest extends HttpServerRequestInternal implements Htt
   @Override
   public boolean isExpectMultipart() {
     synchronized (stream.conn) {
-      return postRequestDecoder != null;
+      return expectMultipart;
     }
   }
 
