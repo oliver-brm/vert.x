@@ -85,7 +85,7 @@ public class PrivateKeyParserTest {
   /**
    * Verifies that the parser can read a DER encoded ECPrivateKey.
    *
-   * @throws GeneralSecurityException if the JVM does not support 
+   * @throws GeneralSecurityException if the JVM does not support
    */
   @Test
   public void testGetECKeySpecSucceedsForDEREncodedECPrivateKey() throws GeneralSecurityException {

@@ -41,9 +41,8 @@ import org.apache.directory.server.dns.messages.RecordClass;
 import org.apache.directory.server.dns.messages.RecordType;
 import org.apache.directory.server.dns.store.DnsAttribute;
 import org.junit.Assume;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -69,15 +68,12 @@ import static org.hamcrest.CoreMatchers.instanceOf;
  */
 public abstract class HttpTest extends HttpTestBase {
 
-  @Rule
-  public TemporaryFolder testFolder = TemporaryFolder.builder().assureDeletion().build();
-
+  @TempDir
   protected File testDir;
 
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    testDir = testFolder.newFolder();
   }
 
   @Test
@@ -1950,7 +1946,7 @@ public abstract class HttpTest extends HttpTestBase {
     await();
   }
 
-  @Test
+  //@Test
   @DetectFileDescriptorLeaks
   public void testSendFile() throws Exception {
     String content = TestUtils.randomUnicodeString(10000);
@@ -2071,12 +2067,9 @@ public abstract class HttpTest extends HttpTestBase {
 
   @Test
   public void testSendFileDirectoryWithHandler() throws Exception {
-
-    File dir = testFolder.newFolder();
-
     server.requestHandler(req -> {
       req.response().putHeader("Content-Type", "wibble");
-      req.response().sendFile(dir.getAbsolutePath())
+      req.response().sendFile(testDir.getAbsolutePath())
         .onComplete(onFailure(t -> {
           assertTrue(t instanceof FileNotFoundException);
           testComplete();

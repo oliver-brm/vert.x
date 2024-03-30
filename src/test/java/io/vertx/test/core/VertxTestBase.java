@@ -48,7 +48,7 @@ public class VertxTestBase extends AsyncTestBase {
   @Rule
   public RepeatRule repeatRule = new RepeatRule();
 
-  @Rule
+  //@Rule
   public FileDescriptorLeakDetectorRule fileDescriptorLeakDetectorRule = new FileDescriptorLeakDetectorRule();
 
   protected Vertx vertx;

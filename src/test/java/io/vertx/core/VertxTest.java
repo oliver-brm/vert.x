@@ -24,7 +24,7 @@ import io.vertx.core.net.impl.CleanableNetClient;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.test.core.AsyncTestBase;
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 

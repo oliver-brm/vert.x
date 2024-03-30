@@ -14,7 +14,7 @@ package io.vertx.test.core;
 import org.junit.ComparisonFailure;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runners.BlockJUnit4ClassRunner;
